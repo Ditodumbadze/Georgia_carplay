@@ -1,0 +1,55 @@
+name: Build CarPlayDemo
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build for iOS Simulator (compile check)
+        run: |
+          set -o pipefail
+          xcodebuild -project CarPlayDemo.xcodeproj -target CarPlayDemo \
+            -sdk iphonesimulator -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO build | tee build-sim.log
+
+      - name: Screenshot of the phone UI in Simulator
+        run: |
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl bootstatus "$DEVICE" -b
+          xcrun simctl install "$DEVICE" build/Debug-iphonesimulator/CarPlayDemo.app
+          xcrun simctl launch "$DEVICE" ge.demo.carplaydemo
+          sleep 15
+          xcrun simctl io "$DEVICE" screenshot phone-screenshot.png
+
+      - name: Build unsigned IPA (for sideloading)
+        run: |
+          set -o pipefail
+          xcodebuild -project CarPlayDemo.xcodeproj -target CarPlayDemo \
+            -sdk iphoneos -configuration Release \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build | tee build-device.log
+          mkdir -p Payload
+          cp -R build/Release-iphoneos/CarPlayDemo.app Payload/
+          zip -qr CarPlayDemo-unsigned.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: CarPlayDemo-build
+          path: |
+            CarPlayDemo-unsigned.ipa
+            phone-screenshot.png
+            build-sim.log
+            build-device.log

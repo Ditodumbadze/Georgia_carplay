@@ -1,0 +1,10 @@
+[
+  { "id": "groovesalad", "name": "Groove Salad", "genre": "Ambient", "url": "https://ice1.somafm.com/groovesalad-128-mp3" },
+  { "id": "dronezone", "name": "Drone Zone", "genre": "Ambient", "url": "https://ice1.somafm.com/dronezone-128-mp3" },
+  { "id": "indiepop", "name": "Indie Pop Rocks", "genre": "Pop", "url": "https://ice1.somafm.com/indiepop-128-mp3" },
+  { "id": "poptron", "name": "PopTron", "genre": "Pop", "url": "https://ice1.somafm.com/poptron-128-mp3" },
+  { "id": "secretagent", "name": "Secret Agent", "genre": "Lounge", "url": "https://ice1.somafm.com/secretagent-128-mp3" },
+  { "id": "lush", "name": "Lush", "genre": "Lounge", "url": "https://ice1.somafm.com/lush-128-mp3" },
+  { "id": "metal", "name": "Metal Detector", "genre": "Rock", "url": "https://ice1.somafm.com/metal-128-mp3" },
+  { "id": "jazz", "name": "Sonic Universe", "genre": "Jazz", "url": "https://ice1.somafm.com/sonicuniverse-128-mp3" }
+]
