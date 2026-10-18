@@ -14,7 +14,7 @@ struct PhoneView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
-                Section("სადგურები") {
+                Section {
                     ForEach(store.search(query)) { station in
                         HStack {
                             VStack(alignment: .leading) {
@@ -35,6 +35,9 @@ struct PhoneView: View {
                         .contentShape(Rectangle())
                         .onTapGesture { player.play(station, queue: store.stations) }
                     }
+                } header: {
+                    // SwiftUI სათაურს დიდი ასოებით წერს — ქართულზე მთავრული გამოდის
+                    Text("სადგურები").textCase(nil)
                 }
             }
             .searchable(text: $query, prompt: "ძებნა სახელით ან ჟანრით")
