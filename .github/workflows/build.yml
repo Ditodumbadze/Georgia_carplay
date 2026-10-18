@@ -4,12 +4,15 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: macos-15
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -44,7 +47,7 @@ jobs:
           cp -R build/Release-iphoneos/CarPlayDemo.app Payload/
           zip -qr CarPlayDemo-unsigned.ipa Payload
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: CarPlayDemo-build
@@ -53,3 +56,18 @@ jobs:
             phone-screenshot.png
             build-sim.log
             build-device.log
+
+      - name: Publish results to ci-output branch
+        if: always()
+        run: |
+          mkdir -p /tmp/out
+          cp phone-screenshot.png /tmp/out/ 2>/dev/null || true
+          { grep -hE "(warning|error):" build-sim.log build-device.log 2>/dev/null | grep -E "\.swift:" | sort -u; } > /tmp/out/diagnostics.txt || true
+          grep -hE "BUILD (SUCCEEDED|FAILED)" build-sim.log build-device.log > /tmp/out/status.txt 2>/dev/null || true
+          echo "${GITHUB_SHA}" > /tmp/out/commit.txt
+          cd /tmp/out
+          git init -q -b ci-output
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A && git commit -qm "CI output for ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" ci-output
